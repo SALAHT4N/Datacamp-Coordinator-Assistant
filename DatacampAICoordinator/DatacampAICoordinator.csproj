@@ -8,4 +8,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\DatacampAICoordinator.Infrastructure\DatacampAICoordinator.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>
