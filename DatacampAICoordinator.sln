@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacampAICoordinator", "DatacampAICoordinator\DatacampAICoordinator.csproj", "{218630EE-6030-4F36-A195-63916AC018F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacampAICoordinator.Infrastructure", "DatacampAICoordinator.Infrastructure\DatacampAICoordinator.Infrastructure.csproj", "{AE345281-3281-4C9E-92FC-E06FB94F86C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{218630EE-6030-4F36-A195-63916AC018F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{218630EE-6030-4F36-A195-63916AC018F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{218630EE-6030-4F36-A195-63916AC018F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{218630EE-6030-4F36-A195-63916AC018F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE345281-3281-4C9E-92FC-E06FB94F86C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE345281-3281-4C9E-92FC-E06FB94F86C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE345281-3281-4C9E-92FC-E06FB94F86C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE345281-3281-4C9E-92FC-E06FB94F86C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
