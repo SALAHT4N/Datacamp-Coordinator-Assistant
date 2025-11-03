@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DatacampAICoordinator.Infrastructure.Models;
+using DatacampAICoordinator.Infrastructure.Services;
 
 namespace DatacampAICoordinator.Infrastructure.Data;
 
@@ -19,6 +20,7 @@ public class DatacampDbContext : DbContext
     /// <param name="options">Database context options</param>
     public DatacampDbContext(DbContextOptions<DatacampDbContext> options) : base(options)
     {
+        Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
     }
 
     /// <summary>
@@ -113,7 +115,7 @@ public class DatacampDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite("Data Source=datacamp.db");
+        optionsBuilder.UseSqlite($"Data Source={SolutionPathHelper.GetDatabasePath()}");
         base.OnConfiguring(optionsBuilder);
     }
     
