@@ -3,6 +3,7 @@ using System;
 using DatacampAICoordinator.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatacampAICoordinator.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(DatacampDbContext))]
-    partial class DatacampDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251031180257_UpdatedDbModel")]
+    partial class UpdatedDbModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -65,8 +68,9 @@ namespace DatacampAICoordinator.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("DatacampId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("DatacampId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -127,8 +131,6 @@ namespace DatacampAICoordinator.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProcessId");
-
                     b.HasIndex("StudentId", "Date");
 
                     b.ToTable("StudentDailyStatus");
@@ -169,17 +171,11 @@ namespace DatacampAICoordinator.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("DatacampAICoordinator.Infrastructure.Models.StudentDailyStatus", b =>
                 {
-                    b.HasOne("DatacampAICoordinator.Infrastructure.Models.Process", "Process")
-                        .WithMany()
-                        .HasForeignKey("ProcessId");
-
                     b.HasOne("DatacampAICoordinator.Infrastructure.Models.Student", "Student")
                         .WithMany("DailyStatuses")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Process");
 
                     b.Navigation("Student");
                 });

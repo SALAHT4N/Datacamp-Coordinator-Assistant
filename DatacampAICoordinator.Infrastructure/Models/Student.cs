@@ -11,6 +11,11 @@ public class Student
     public int Id { get; set; }
     
     /// <summary>
+    /// DataCamp unique identifier for the student
+    /// </summary>
+    public int DatacampId { get; set; }
+    
+    /// <summary>
     /// Student's full name
     /// </summary>
     public string FullName { get; set; } = string.Empty;
