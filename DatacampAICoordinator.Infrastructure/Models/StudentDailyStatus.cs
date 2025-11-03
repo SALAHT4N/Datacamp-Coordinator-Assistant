@@ -47,5 +47,6 @@ public class StudentDailyStatus
     
     // Navigation properties
     public Student Student { get; set; } = null!;
+    public Process? Process { get; set; } = null!;
 }
 
