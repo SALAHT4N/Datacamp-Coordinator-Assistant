@@ -61,10 +61,13 @@ var datacampIdToSystemIdMap = newStudents.Concat(existingStudents)
 
 var now = DateTime.Now;
 
+IProcessRepository processRepository = new ProcessRepository(context);
+var previousProcess = await processRepository.GetLatestProcessAsync();
+
 Process process = new Process()
 {
     DateOfRun = now,
-    InitialDate = now.AddDays(-1),
+    InitialDate = previousProcess?.DateOfRun ?? DateTime.MinValue,
     FinalDate = now,
     Status = ProcessStatus.Pending
 };
@@ -78,7 +81,7 @@ var createdStatuses = allEntries.Select(entry => new StudentDailyStatus()
     StudentId = datacampIdToSystemIdMap[entry.User.Id],
     Date = DateTime.Now,
     Process = process,
-});
+}).ToList();
 
 IStudentDailyStatusRepository studentDailyStatusRepository = new StudentDailyStatusRepository(context);
 var storedRecords = await studentDailyStatusRepository.BulkCreateAsync(createdStatuses);
@@ -86,5 +89,49 @@ var storedRecords = await studentDailyStatusRepository.BulkCreateAsync(createdSt
 process.Status = ProcessStatus.Completed;
 process.RecordsProcessed = storedRecords;
 
-IProcessRepository processRepository = new ProcessRepository(context);
 await processRepository.UpdateAsync(process);
+
+if (previousProcess != null)
+{
+    var previousStatusRecords = await studentDailyStatusRepository.GetByProcessIdAsync(previousProcess.ProcessId);
+    
+    var previousRecordsDict = previousStatusRecords.ToDictionary(x => x.StudentId);
+    
+    var emptyStatus = new StudentDailyStatus
+    {
+        Courses = 0,
+        Chapters = 0,
+        Xp = 0,
+        Date = DateTime.MinValue
+    };
+    
+    var progressRecords = createdStatuses
+        .Select(current =>
+        {
+            var previous = previousRecordsDict.GetValueOrDefault(current.StudentId, emptyStatus);
+            
+            return new StudentProgress
+            {
+                StudentId = current.StudentId,
+                ProcessId = process.ProcessId,
+                DifferenceOfCourses = current.Courses - previous.Courses,
+                DifferenceOfChapters = current.Chapters - previous.Chapters,
+                DifferenceOfXp = current.Xp - previous.Xp,
+                Notes = previous.Date == DateTime.MinValue 
+                    ? "First time tracking - no previous data" 
+                    : $"Progress from {previous.Date:yyyy-MM-dd} to {current.Date:yyyy-MM-dd}"
+            };
+        })
+        .ToList();
+    
+    Console.WriteLine($"\nCalculated progress for {progressRecords.Count} students");
+    Console.WriteLine("\nTop 5 students by XP gain:");
+    foreach (var progress in progressRecords.OrderByDescending(p => p.DifferenceOfXp).Take(5))
+    {
+        Console.WriteLine($"Student {progress.StudentId}: +{progress.DifferenceOfXp} XP, +{progress.DifferenceOfChapters} Chapters, +{progress.DifferenceOfCourses} Courses");
+    }
+    
+    IStudentProgressRepository studentProgressRepository = new StudentProgressRepository(context);
+    var savedProgressCount = await studentProgressRepository.BulkCreateAsync(progressRecords);
+    Console.WriteLine($"\nSaved {savedProgressCount} progress records to database");
+}
