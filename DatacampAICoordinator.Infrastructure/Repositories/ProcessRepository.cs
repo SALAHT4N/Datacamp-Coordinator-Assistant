@@ -1,6 +1,7 @@
 using DatacampAICoordinator.Infrastructure.Data;
 using DatacampAICoordinator.Infrastructure.Models;
 using DatacampAICoordinator.Infrastructure.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace DatacampAICoordinator.Infrastructure.Repositories;
 
@@ -25,5 +26,12 @@ public class ProcessRepository : IProcessRepository
         _context.Process.Update(process);
         return await _context.SaveChangesAsync(cancellationToken);
     }
+    
+    /// <inheritdoc />
+    public async Task<Process?> GetLatestProcessAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Process
+            .OrderByDescending(p => p.DateOfRun)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
-

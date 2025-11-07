@@ -14,4 +14,11 @@ public interface IProcessRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Number of entities updated</returns>
     Task<int> UpdateAsync(Process process, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Retrieves the latest process ordered by DateOfRun
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The most recent Process object, or null if no processes exist</returns>
+    Task<Process?> GetLatestProcessAsync(CancellationToken cancellationToken = default);
 }
