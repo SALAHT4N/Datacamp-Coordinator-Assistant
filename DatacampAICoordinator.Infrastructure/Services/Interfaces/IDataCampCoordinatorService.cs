@@ -21,6 +21,6 @@ public interface IDataCampCoordinatorService
         string cookieValue,
         string group = "gaza-sky-geeks-25-26",
         string team = "nnu-team",
-        int days = 30);
+        int days = 36500);
 }
 

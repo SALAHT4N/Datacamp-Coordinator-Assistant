@@ -39,7 +39,7 @@ public class DataCampCoordinatorService : IDataCampCoordinatorService
         string cookieValue,
         string group = "gaza-sky-geeks-25-26",
         string team = "nnu-team",
-        int days = 30)
+        int days = 36500)
     {
         // Step 1: Fetch all leaderboard entries from DataCamp
         var allEntries = await _dataCampService.GetAllLeaderboardEntriesAsync(
