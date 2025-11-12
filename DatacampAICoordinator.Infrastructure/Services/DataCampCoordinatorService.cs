@@ -13,19 +13,22 @@ public class DataCampCoordinatorService : IDataCampCoordinatorService
     private readonly IStatusRecordService _statusRecordService;
     private readonly IProgressCalculationService _progressCalculationService;
     private readonly IProcessRepository _processRepository;
+    private readonly IReportService _reportService;
 
     public DataCampCoordinatorService(
         IDataCampService dataCampService,
         IStudentSyncService studentSyncService,
         IStatusRecordService statusRecordService,
         IProgressCalculationService progressCalculationService,
-        IProcessRepository processRepository)
+        IProcessRepository processRepository,
+        IReportService reportService)
     {
         _dataCampService = dataCampService;
         _studentSyncService = studentSyncService;
         _statusRecordService = statusRecordService;
         _progressCalculationService = progressCalculationService;
         _processRepository = processRepository;
+        _reportService = reportService;
     }
 
     /// <summary>
@@ -34,6 +37,7 @@ public class DataCampCoordinatorService : IDataCampCoordinatorService
     /// 2. Syncs students to database
     /// 3. Creates and stores status records
     /// 4. Calculates and stores progress (if previous data exists)
+    /// 5. Generates and publishes report
     /// </summary>
     public async Task<int> ExecuteFullSyncAsync(
         string cookieValue,
@@ -75,7 +79,10 @@ public class DataCampCoordinatorService : IDataCampCoordinatorService
             Console.WriteLine("No previous process found - skipping progress calculation");
         }
 
+        // Step 6: Generate and publish report for the current process
+        await _reportService.GenerateAndPublishReportAsync(currentProcess.ProcessId);
+        Console.WriteLine("Report generated and published");
+
         return progressCount;
     }
 }
-

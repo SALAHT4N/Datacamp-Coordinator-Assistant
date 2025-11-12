@@ -1,5 +1,4 @@
 ﻿using DatacampAICoordinator.Infrastructure.Data;
-using DatacampAICoordinator.Infrastructure.Models;
 using DatacampAICoordinator.Infrastructure.Repositories;
 using DatacampAICoordinator.Infrastructure.Repositories.Interfaces;
 using DatacampAICoordinator.Infrastructure.Services;
@@ -31,6 +30,7 @@ IDataCampService dataCampService = new DataCampService(new HttpClient());
 IStudentSyncService studentSyncService = new StudentSyncService(studentRepository);
 IStatusRecordService statusRecordService = new StatusRecordService(studentDailyStatusRepository, processRepository);
 IProgressCalculationService progressCalculationService = new ProgressCalculationService(studentDailyStatusRepository, studentProgressRepository);
+IReportService reportService = new ReportService(context);
 
 // Create coordinator service
 IDataCampCoordinatorService coordinatorService = new DataCampCoordinatorService(
@@ -38,7 +38,8 @@ IDataCampCoordinatorService coordinatorService = new DataCampCoordinatorService(
     studentSyncService,
     statusRecordService,
     progressCalculationService,
-    processRepository);
+    processRepository,
+    reportService);
 
 // Execute the full sync workflow
 var progressCount = await coordinatorService.ExecuteFullSyncAsync(cookieValue);
