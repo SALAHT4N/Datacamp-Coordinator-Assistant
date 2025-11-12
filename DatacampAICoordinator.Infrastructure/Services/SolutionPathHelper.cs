@@ -5,7 +5,7 @@ using System.Linq;
 
 public static class SolutionPathHelper
 {
-    private static string GetSolutionRoot()
+    public static string GetSolutionRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
 

@@ -3,6 +3,7 @@ using DatacampAICoordinator.Infrastructure.Repositories;
 using DatacampAICoordinator.Infrastructure.Repositories.Interfaces;
 using DatacampAICoordinator.Infrastructure.Services;
 using DatacampAICoordinator.Infrastructure.Services.Interfaces;
+using RazorLight;
 
 Console.WriteLine("DataCamp AI Coordinator");
 
@@ -25,12 +26,27 @@ IStudentDailyStatusRepository studentDailyStatusRepository = new StudentDailySta
 IStudentProgressRepository studentProgressRepository = new StudentProgressRepository(context);
 IProcessRepository processRepository = new ProcessRepository(context);
 
+
+// Create RazorLight Engine with ReportTemplates from Infrastructure project
+var solutionRoot = SolutionPathHelper.GetSolutionRoot();
+var templatesPath = Path.Combine(solutionRoot, "DatacampAICoordinator.Infrastructure", "ReportTemplates");
+
+if (!Directory.Exists(templatesPath))
+{
+    throw new DirectoryNotFoundException($"ReportTemplates folder not found at: {templatesPath}");
+}
+
+var razorLightEngine = new RazorLightEngineBuilder()
+    .UseFileSystemProject(templatesPath)
+    .UseMemoryCachingProvider()
+    .Build();
+
 // Create services
 IDataCampService dataCampService = new DataCampService(new HttpClient());
 IStudentSyncService studentSyncService = new StudentSyncService(studentRepository);
 IStatusRecordService statusRecordService = new StatusRecordService(studentDailyStatusRepository, processRepository);
 IProgressCalculationService progressCalculationService = new ProgressCalculationService(studentDailyStatusRepository, studentProgressRepository);
-IReportService reportService = new ReportService(context);
+IReportService reportService = new ReportService(context, razorLightEngine);
 
 // Create coordinator service
 IDataCampCoordinatorService coordinatorService = new DataCampCoordinatorService(

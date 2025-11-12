@@ -3,6 +3,7 @@ using DatacampAICoordinator.Infrastructure.DTOs;
 using DatacampAICoordinator.Infrastructure.Models;
 using DatacampAICoordinator.Infrastructure.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using RazorLight;
 
 namespace DatacampAICoordinator.Infrastructure.Services;
 
@@ -12,10 +13,14 @@ namespace DatacampAICoordinator.Infrastructure.Services;
 public class ReportService : IReportService
 {
     private readonly DatacampDbContext _dbContext;
-
-    public ReportService(DatacampDbContext dbContext)
+    private readonly RazorLightEngine _razorLightEngine;
+    
+    private readonly string ViewName = "StudentProgressReportV1.cshtml";
+    
+    public ReportService(DatacampDbContext dbContext, RazorLightEngine razorLightEngine)
     {
         _dbContext = dbContext;
+        _razorLightEngine = razorLightEngine;
     }
 
     /// <summary>
@@ -25,14 +30,15 @@ public class ReportService : IReportService
     /// <param name="processId">The ID of the process to generate the report for</param>
     public async Task GenerateAndPublishReportAsync(int processId)
     {
-        var report = await GenerateReportData(processId);
+        var reportData = await GenerateReportData(processId);
         
-        await Task.CompletedTask;
+        var renderedReport = await _razorLightEngine.CompileRenderAsync(ViewName, reportData);
+        
+        await SaveHtmlAsync(processId, renderedReport);
     }
 
     private async Task<StudentProgressReportDto> GenerateReportData(int processId)
     {
-        // First, get the process information
         var process = await _dbContext.Process
             .FirstOrDefaultAsync(p => p.ProcessId == processId);
 
@@ -41,13 +47,11 @@ public class ReportService : IReportService
             throw new InvalidOperationException($"Process with ID {processId} not found");
         }
 
-        // Query to get all StudentProgress records for the given processId
         var progressEntries = await _dbContext.StudentProgress
             .Where(sp => sp.ProcessId == processId)
             .Include(sp => sp.Student)
             .Select(sp => new StudentProgressEntryDto
             {
-                // StudentProgress fields
                 Id = sp.Id,
                 StudentId = sp.StudentId,
                 DifferenceOfCourses = sp.DifferenceOfCourses,
@@ -55,7 +59,6 @@ public class ReportService : IReportService
                 DifferenceOfXp = sp.DifferenceOfXp,
                 Notes = sp.Notes,
                 
-                // Student fields
                 DatacampId = sp.Student.DatacampId,
                 FullName = sp.Student.FullName,
                 Email = sp.Student.Email,
@@ -64,7 +67,6 @@ public class ReportService : IReportService
             })
             .ToListAsync();
 
-        // Build the report with process info at top level and list of entries
         return new StudentProgressReportDto
         {
             ProcessId = process.ProcessId,
@@ -73,5 +75,13 @@ public class ReportService : IReportService
             ProcessFinalDate = process.FinalDate,
             ProgressEntries = progressEntries
         };
+    }
+    
+    private async Task SaveHtmlAsync(int processId, string html)
+    {
+        var fileName = $"StudentProgressReport_{processId}_{DateTime.UtcNow:yyyyMMddHHmmss}.html";
+        var path = Path.Combine(AppContext.BaseDirectory, "ReportsOut");
+        Directory.CreateDirectory(path);
+        await File.WriteAllTextAsync(Path.Combine(path, fileName), html);
     }
 }
