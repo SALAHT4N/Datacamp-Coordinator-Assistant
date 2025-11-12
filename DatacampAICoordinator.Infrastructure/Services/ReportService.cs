@@ -1,6 +1,5 @@
 using DatacampAICoordinator.Infrastructure.Data;
 using DatacampAICoordinator.Infrastructure.DTOs;
-using DatacampAICoordinator.Infrastructure.Models;
 using DatacampAICoordinator.Infrastructure.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using RazorLight;
@@ -65,6 +64,7 @@ public class ReportService : IReportService
                 Slug = sp.Student.Slug,
                 IsActive = sp.Student.IsActive
             })
+            .OrderByDescending(x => x.DifferenceOfXp)
             .ToListAsync();
 
         return new StudentProgressReportDto
