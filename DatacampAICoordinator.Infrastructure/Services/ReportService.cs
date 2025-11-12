@@ -13,13 +13,15 @@ public class ReportService : IReportService
 {
     private readonly DatacampDbContext _dbContext;
     private readonly RazorLightEngine _razorLightEngine;
+    private readonly IReportPublisher _reportPublisher;
     
     private readonly string ViewName = "StudentProgressReportV1.cshtml";
     
-    public ReportService(DatacampDbContext dbContext, RazorLightEngine razorLightEngine)
+    public ReportService(DatacampDbContext dbContext, RazorLightEngine razorLightEngine, IReportPublisher reportPublisher)
     {
         _dbContext = dbContext;
         _razorLightEngine = razorLightEngine;
+        _reportPublisher = reportPublisher;
     }
 
     /// <summary>
@@ -34,6 +36,8 @@ public class ReportService : IReportService
         var renderedReport = await _razorLightEngine.CompileRenderAsync(ViewName, reportData);
         
         await SaveHtmlAsync(processId, renderedReport);
+        
+        await _reportPublisher.PublishAsync(renderedReport, processId);
     }
 
     private async Task<StudentProgressReportDto> GenerateReportData(int processId)

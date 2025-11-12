@@ -46,7 +46,8 @@ IDataCampService dataCampService = new DataCampService(new HttpClient());
 IStudentSyncService studentSyncService = new StudentSyncService(studentRepository);
 IStatusRecordService statusRecordService = new StatusRecordService(studentDailyStatusRepository, processRepository);
 IProgressCalculationService progressCalculationService = new ProgressCalculationService(studentDailyStatusRepository, studentProgressRepository);
-IReportService reportService = new ReportService(context, razorLightEngine);
+IReportPublisher reportPublisher = new EmailReportPublisher();
+IReportService reportService = new ReportService(context, razorLightEngine, reportPublisher);
 
 // Create coordinator service
 IDataCampCoordinatorService coordinatorService = new DataCampCoordinatorService(
