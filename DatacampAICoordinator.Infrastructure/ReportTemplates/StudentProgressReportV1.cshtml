@@ -12,11 +12,13 @@
 <style>
   body { font-family: Arial, sans-serif; margin: 24px; }
   h1 { margin-bottom: 0; }
+  h2 { margin-top: 32px; margin-bottom: 8px; }
   .meta { color: #555; margin-bottom: 16px; }
-  table { border-collapse: collapse; width: 100%; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
   th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
   th { background: #f4f4f4; text-align: left; }
   .muted { color: #777; font-size: 12px; }
+  .warning { color: #d9534f; }
 </style>
 </head>
 <body>
@@ -27,12 +29,14 @@
     Window: <strong>@fmt(Model.ProcessInitialDate)</strong> – <strong>@fmt(Model.ProcessFinalDate)</strong>
   </div>
 
+  <h2>Progress Entries</h2>
   <table>
     <thead>
       <tr>
         <th>#</th>
         <th>Student</th>
         <th>Email</th>
+        <th>Last XP Date</th>
         <th>Courses Δ</th>
         <th>Chapters Δ</th>
         <th>XP Δ</th>
@@ -48,6 +52,7 @@
               <td>@i</td>
               <td>@e.FullName<br/><span class="muted">@e.DatacampId (@e.Slug)</span></td>
               <td>@e.Email</td>
+              <td>@fmt(e.LastXpDate)</td>
               <td>@e.DifferenceOfCourses</td>
               <td>@e.DifferenceOfChapters</td>
               <td>@e.DifferenceOfXp</td>
@@ -57,7 +62,41 @@
     }
     else
     {
-        <tr><td colspan="8" class="muted">No progress entries.</td></tr>
+        <tr><td colspan="7" class="muted">No progress entries.</td></tr>
+    }
+    </tbody>
+  </table>
+
+  <h2 class="warning">Inactive Students (No XP for @Model.InactiveThresholdDays+ days)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student</th>
+        <th>Email</th>
+        <th>Last XP Date</th>
+        <th>Days Since Last XP</th>
+      </tr>
+    </thead>
+    <tbody>
+    @if (Model.InactiveStudents != null && Model.InactiveStudents.Any())
+    {
+        var i = 1;
+        foreach (var s in Model.InactiveStudents)
+        {
+            <tr>
+              <td>@i</td>
+              <td>@s.FullName<br/><span class="muted">@s.DatacampId (@s.Slug)</span></td>
+              <td>@s.Email</td>
+              <td>@fmt(s.LastXpDate)</td>
+              <td><strong>@s.DaysSinceLastXp</strong></td>
+            </tr>
+            i++;
+        }
+    }
+    else
+    {
+        <tr><td colspan="5" class="muted">No inactive students.</td></tr>
     }
     </tbody>
   </table>

@@ -55,11 +55,10 @@ public class ReportService : IReportService
             throw new InvalidOperationException($"Process with ID {processId} not found");
         }
 
-        // Get the most recent daily status for each student to retrieve LastXpDate
         var latestDailyStatuses = await _dbContext.StudentDailyStatus
             .GroupBy(sds => sds.StudentId)
             .Select(g => g.OrderByDescending(sds => sds.Date).FirstOrDefault())
-            .ToDictionaryAsync(sds => sds!.StudentId, sds => sds);
+            .ToDictionaryAsync(sds => sds.StudentId, sds => sds);
 
         var progressEntries = await _dbContext.StudentProgress
             .Where(sp => sp.ProcessId == processId)
@@ -85,34 +84,31 @@ public class ReportService : IReportService
             .OrderByDescending(x => x.DifferenceOfXp)
             .ToListAsync();
 
-        // Calculate inactive students - those whose LastXpDate is older than ProcessFinalDate by the threshold
         var thresholdDate = process.FinalDate.AddDays(-InactiveThresholdDays);
         
         var inactiveStudents = await _dbContext.Student
             .Where(s => s.IsActive)
-            .Select(s => new
-            {
-                Student = s,
-                LatestStatus = _dbContext.StudentDailyStatus
-                    .Where(sds => sds.StudentId == s.Id)
-                    .OrderByDescending(sds => sds.Date)
-                    .FirstOrDefault()
-            })
-            .Where(x => x.LatestStatus != null && 
-                       x.LatestStatus.LastXpDate.HasValue && 
-                       x.LatestStatus.LastXpDate.Value < thresholdDate)
             .Select(x => new InactiveStudentDto
             {
-                StudentId = x.Student.Id,
-                DatacampId = x.Student.DatacampId,
-                FullName = x.Student.FullName,
-                Email = x.Student.Email,
-                Slug = x.Student.Slug,
-                LastXpDate = x.LatestStatus!.LastXpDate,
-                DaysSinceLastXp = (int)(process.FinalDate - x.LatestStatus.LastXpDate!.Value).TotalDays
+                StudentId = x.Id,
+                DatacampId = x.DatacampId,
+                FullName = x.FullName,
+                Email = x.Email,
+                Slug = x.Slug,
             })
-            .OrderByDescending(x => x.DaysSinceLastXp)
             .ToListAsync();
+        
+        inactiveStudents = inactiveStudents
+            .Where(x => 
+                latestDailyStatuses.ContainsKey(x.StudentId) && 
+                latestDailyStatuses[x.StudentId]!.LastXpDate < thresholdDate)
+            .ToList();
+
+        inactiveStudents.ForEach(x => 
+        {
+            x.LastXpDate = latestDailyStatuses[x.StudentId]!.LastXpDate;
+            x.DaysSinceLastXp = (int)(process.FinalDate - x.LastXpDate!.Value).TotalDays;
+        });
 
         return new StudentProgressReportDto
         {
@@ -121,7 +117,9 @@ public class ReportService : IReportService
             ProcessInitialDate = process.InitialDate,
             ProcessFinalDate = process.FinalDate,
             ProgressEntries = progressEntries,
-            InactiveStudents = inactiveStudents,
+            InactiveStudents = inactiveStudents
+                .OrderByDescending(x => x.DaysSinceLastXp)
+                .ToList(),
             InactiveThresholdDays = InactiveThresholdDays
         };
     }
