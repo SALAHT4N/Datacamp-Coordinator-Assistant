@@ -19,6 +19,21 @@ public class StudentProgressEntryDto
     public string Email { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public bool IsActive { get; set; }
+    public DateTime? LastXpDate { get; set; }
+}
+
+/// <summary>
+/// DTO for students who haven't earned XP recently
+/// </summary>
+public class InactiveStudentDto
+{
+    public int StudentId { get; set; }
+    public int DatacampId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? Slug { get; set; }
+    public DateTime? LastXpDate { get; set; }
+    public int DaysSinceLastXp { get; set; }
 }
 
 /// <summary>
@@ -34,4 +49,10 @@ public class StudentProgressReportDto
     
     // List of student progress entries with student details
     public List<StudentProgressEntryDto> ProgressEntries { get; set; } = new();
+    
+    // List of students who haven't earned XP in a specified number of days
+    public List<InactiveStudentDto> InactiveStudents { get; set; } = new();
+    
+    // Threshold for inactive students (default: 4 days)
+    public int InactiveThresholdDays { get; set; } = 4;
 }
