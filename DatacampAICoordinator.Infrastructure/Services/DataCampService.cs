@@ -1,4 +1,5 @@
 using System.Text.Json;
+using DatacampAICoordinator.Infrastructure.Configuration;
 using DatacampAICoordinator.Infrastructure.DTOs;
 using DatacampAICoordinator.Infrastructure.Services.Interfaces;
 
@@ -11,10 +12,12 @@ public class DataCampService : IDataCampService
 {
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly DataCampSettings _dataCampSettings;
 
-    public DataCampService(HttpClient httpClient)
+    public DataCampService(HttpClient httpClient, DataCampSettings dataCampSettings)
     {
         _httpClient = httpClient;
+        _dataCampSettings = dataCampSettings ?? throw new ArgumentNullException(nameof(dataCampSettings));
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -23,12 +26,19 @@ public class DataCampService : IDataCampService
 
     public async Task<List<LeaderboardEntry>> GetAllLeaderboardEntriesAsync(
         string cookieValue,
-        string group = "gaza-sky-geeks-25-26",
-        string team = "nnu-team",
-        int days = 30,
-        string sortField = "xp",
-        string sortOrder = "desc")
+        string? group = null,
+        string? team = null,
+        int? days = null,
+        string? sortField = null,
+        string? sortOrder = null)
     {
+        // Use provided values or fall back to settings
+        group ??= _dataCampSettings.GroupName;
+        team ??= _dataCampSettings.TeamName;
+        days ??= _dataCampSettings.Days;
+        sortField ??= _dataCampSettings.SortField;
+        sortOrder ??= _dataCampSettings.SortOrder;
+
         var allEntries = new List<LeaderboardEntry>();
         int currentPage = 1;
         bool hasMorePages = true;

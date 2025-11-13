@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using DatacampAICoordinator.Infrastructure.Configuration;
 using DatacampAICoordinator.Infrastructure.Services.Interfaces;
 
 namespace DatacampAICoordinator.Infrastructure.Services;
@@ -9,15 +10,12 @@ namespace DatacampAICoordinator.Infrastructure.Services;
 /// </summary>
 public class EmailReportPublisher : IReportPublisher
 {
-    // Email configuration - can be moved to appsettings.json later
-    private const string SmtpHost = "smtp.gmail.com"; // Change to your SMTP server
-    private const int SmtpPort = 587;
-    private const string SmtpUsername = "tanboursalah@gmail.com"; // Replace with your email
-    private const string SmtpPassword = "your-password"; // Replace with your password or app-specific password
-    private const string FromEmail = "tanboursalah@gmail.com"; // Replace with sender email
-    private const string FromName = "DataCamp AI Coordinator";
-    private const string ToEmail = "salah.aldin.tanbour@outlook.com"; // Replace with recipient email
-    private const string Subject = "Student Progress Report";
+    private readonly EmailSettings _emailSettings;
+
+    public EmailReportPublisher(EmailSettings emailSettings)
+    {
+        _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
+    }
 
     /// <summary>
     /// Publishes the report by sending it via email
@@ -28,23 +26,25 @@ public class EmailReportPublisher : IReportPublisher
     {
         try
         {
-            using var smtpClient = new SmtpClient(SmtpHost, SmtpPort)
+            using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
             {
                 EnableSsl = true,
-                Credentials = new NetworkCredential(SmtpUsername, SmtpPassword)
+                Credentials = new NetworkCredential(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword)
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(FromEmail, FromName),
-                Subject = $"{Subject} - Process {processId} - {DateTime.UtcNow:yyyy-MM-dd}",
+                From = new MailAddress(_emailSettings.FromEmail, _emailSettings.FromName),
+                Subject = $"{_emailSettings.Subject} - Process {processId} - {DateTime.UtcNow:yyyy-MM-dd}",
                 Body = htmlContent,
                 IsBodyHtml = true
             };
 
-            mailMessage.To.Add(ToEmail);
+            mailMessage.To.Add(_emailSettings.ToEmail);
 
             await smtpClient.SendMailAsync(mailMessage);
+
+            Console.WriteLine($"Email sent successfully for process {processId} to {_emailSettings.ToEmail}");
         }
         catch (Exception ex)
         {
@@ -53,4 +53,3 @@ public class EmailReportPublisher : IReportPublisher
         }
     }
 }
-

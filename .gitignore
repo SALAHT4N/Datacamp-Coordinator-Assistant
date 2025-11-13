@@ -1,3 +1,9 @@
+# appsettings.json
+appsettings.json
+
+# Keep the template
+!appsettings.template.json
+
 # Created by https://www.toptal.com/developers/gitignore/api/dotnetcore,csharp,intellij,aspnetcore
 # Edit at https://www.toptal.com/developers/gitignore?templates=dotnetcore,csharp,intellij,aspnetcore
 

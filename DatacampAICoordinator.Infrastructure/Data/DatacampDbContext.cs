@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using DatacampAICoordinator.Infrastructure.Models;
-using DatacampAICoordinator.Infrastructure.Services;
 
 namespace DatacampAICoordinator.Infrastructure.Data;
 
@@ -9,6 +8,8 @@ namespace DatacampAICoordinator.Infrastructure.Data;
 /// </summary>
 public class DatacampDbContext : DbContext
 {
+    private readonly string? _connectionString;
+
     public DatacampDbContext()
     {
         Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
@@ -21,6 +22,15 @@ public class DatacampDbContext : DbContext
     public DatacampDbContext(DbContextOptions<DatacampDbContext> options) : base(options)
     {
         Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+    }
+
+    /// <summary>
+    /// Constructor that accepts a connection string directly
+    /// </summary>
+    /// <param name="connectionString">SQLite connection string</param>
+    public DatacampDbContext(string connectionString)
+    {
+        _connectionString = connectionString;
     }
 
     /// <summary>
@@ -115,7 +125,19 @@ public class DatacampDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Data Source={SolutionPathHelper.GetDatabasePath()}");
+        if (!optionsBuilder.IsConfigured)
+        {
+            if (!string.IsNullOrEmpty(_connectionString))
+            {
+                optionsBuilder.UseSqlite(_connectionString);
+            }
+            else
+            {
+                // Fallback to default path if no connection string provided
+                optionsBuilder.UseSqlite("Data Source=datacamp.db");
+            }
+        }
+        
         base.OnConfiguring(optionsBuilder);
     }
     

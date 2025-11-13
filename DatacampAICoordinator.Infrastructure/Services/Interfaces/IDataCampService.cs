@@ -17,12 +17,12 @@ public interface IDataCampService
     /// <param name="sortField">Field to sort by (default: xp)</param>
     /// <param name="sortOrder">Sort order (default: desc)</param>
     /// <returns>List of all leaderboard entries from all pages</returns>
-    Task<List<LeaderboardEntry>> GetAllLeaderboardEntriesAsync(
+    public Task<List<LeaderboardEntry>> GetAllLeaderboardEntriesAsync(
         string cookieValue,
-        string group = "gaza-sky-geeks-25-26",
-        string team = "nnu-team",
-        int days = 30,
-        string sortField = "xp",
-        string sortOrder = "desc");
+        string? group = null,
+        string? team = null,
+        int? days = null,
+        string? sortField = null,
+        string? sortOrder = null);
 }
 
