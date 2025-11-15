@@ -1,0 +1,77 @@
+@model DatacampAICoordinator.Infrastructure.DTOs.DateRangeReportDto
+@{
+    Layout = null; // keep it standalone
+    string fmt(DateTime? d) => d?.ToString("yyyy-MM-dd HH:mm") ?? "";
+    string fmtDate(DateTime? d) => d?.ToString("yyyy-MM-dd") ?? "";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Student Progress Report - Date Range</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 24px; }
+  h1 { margin-bottom: 0; }
+  h2 { margin-top: 32px; margin-bottom: 8px; }
+  .meta { color: #555; margin-bottom: 16px; }
+  .date-range { background: #e8f4f8; padding: 12px; border-left: 4px solid #0066cc; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+  th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
+  th { background: #f4f4f4; text-align: left; }
+  .muted { color: #777; font-size: 12px; }
+  .positive { color: #28a745; font-weight: bold; }
+  .negative { color: #dc3545; }
+  .zero { color: #999; }
+</style>
+</head>
+<body>
+  <h1>Student Progress Report - Date Range</h1>
+  <div class="date-range">
+    <strong>Reporting Period:</strong><br/>
+    From: <strong>@fmtDate(Model.StartDate)</strong><br/>
+    To: <strong>@fmtDate(Model.EndDate)</strong>
+  </div>
+  <div class="meta">
+    Generated: <strong>@fmt(Model.GeneratedAt)</strong><br/>
+    Total Students: <strong>@Model.ProgressEntries.Count</strong>
+  </div>
+
+  <h2>Progress Entries</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student</th>
+        <th>Email</th>
+        <th>Courses Δ</th>
+        <th>Chapters Δ</th>
+        <th>XP Δ</th>
+      </tr>
+    </thead>
+    <tbody>
+    @if (Model.ProgressEntries != null && Model.ProgressEntries.Any())
+    {
+        var i = 1;
+        foreach (var e in Model.ProgressEntries)
+        {
+            string xpClass = e.DifferenceOfXp > 0 ? "positive" : (e.DifferenceOfXp < 0 ? "negative" : "zero");
+            <tr>
+              <td>@i</td>
+              <td>@e.FullName<br/><span class="muted">@e.DatacampId (@e.Slug)</span></td>
+              <td>@e.Email</td>
+              <td>@e.DifferenceOfCourses</td>
+              <td>@e.DifferenceOfChapters</td>
+              <td class="@xpClass">@e.DifferenceOfXp</td>
+            </tr>
+            i++;
+        }
+    }
+    else
+    {
+        <tr><td colspan="7" class="muted">No progress entries.</td></tr>
+    }
+    </tbody>
+  </table>
+</body>
+</html>

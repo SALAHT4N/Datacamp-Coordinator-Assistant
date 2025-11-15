@@ -18,5 +18,14 @@ public interface IProgressCalculationService
         Process currentProcess,
         List<StudentDailyStatus> currentStatusRecords,
         Process previousProcess);
-}
 
+    /// <summary>
+    /// Calculates progress between two processes for a date range without storing to database
+    /// </summary>
+    /// <param name="startProcess">The earlier process (start date)</param>
+    /// <param name="endProcess">The later process (end date)</param>
+    /// <returns>List of calculated progress records</returns>
+    Task<List<StudentProgress>> CalculateProgressBetweenProcessesAsync(
+        Process startProcess,
+        Process endProcess);
+}

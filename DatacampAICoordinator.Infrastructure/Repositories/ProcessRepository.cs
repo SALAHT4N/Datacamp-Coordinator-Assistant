@@ -34,4 +34,14 @@ public class ProcessRepository : IProcessRepository
             .OrderByDescending(p => p.DateOfRun)
             .FirstOrDefaultAsync(cancellationToken);
     }
+    
+    /// <inheritdoc />
+    public async Task<Process?> GetProcessByDateAsync(DateTime date, CancellationToken cancellationToken = default)
+    {
+        var dateOnly = date.Date;
+        return await _context.Process
+            .Where(p => p.DateOfRun.Date == dateOnly)
+            .OrderByDescending(p => p.DateOfRun)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

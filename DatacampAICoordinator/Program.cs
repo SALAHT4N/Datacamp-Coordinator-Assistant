@@ -109,13 +109,48 @@ try
         processRepository,
         reportService);
 
-    Console.WriteLine("\n=== Starting Data Synchronization ===\n");
-    
-    // Execute the full sync workflow
-    var progressCount = await coordinatorService.ExecuteFullSyncAsync(generalSettings.DataCampCookie);
+    // Check for command-line arguments to determine execution mode
+    if (args.Length >= 2)
+    {
+        // Date range report mode
+        if (!DateTime.TryParse(args[0], out var startDate))
+        {
+            Console.WriteLine($"ERROR: Invalid start date format '{args[0]}'. Expected format: yyyy-MM-dd");
+            Environment.Exit(1);
+        }
 
-    Console.WriteLine($"\n=== Sync Complete ===");
-    Console.WriteLine($"Progress records created: {progressCount}");
+        if (!DateTime.TryParse(args[1], out var endDate))
+        {
+            Console.WriteLine($"ERROR: Invalid end date format '{args[1]}'. Expected format: yyyy-MM-dd");
+            Environment.Exit(1);
+        }
+
+        // Generate date range report
+        var success = await coordinatorService.GenerateDateRangeReportAsync(startDate, endDate);
+        
+        if (success)
+        {
+            Console.WriteLine("\n=== Date Range Report Complete ===");
+        }
+        else
+        {
+            Console.WriteLine("\n=== Date Range Report Failed ===");
+            Environment.Exit(1);
+        }
+    }
+    else
+    {
+        // Normal sync mode
+        Console.WriteLine("\n=== Starting Data Synchronization ===");
+        Console.WriteLine("Usage: To generate date range report, run with: <start-date> <end-date>");
+        Console.WriteLine("Example: DatacampAICoordinator.exe 2024-01-01 2024-01-15\n");
+        
+        // Execute the full sync workflow
+        var progressCount = await coordinatorService.ExecuteFullSyncAsync(generalSettings.DataCampCookie);
+
+        Console.WriteLine($"\n=== Sync Complete ===");
+        Console.WriteLine($"Progress records created: {progressCount}");
+    }
 }
 catch (FileNotFoundException ex)
 {

@@ -62,5 +62,46 @@ public class ProgressCalculationService : IProgressCalculationService
         var savedProgressCount = await _studentProgressRepository.BulkCreateAsync(progressRecords);
         return savedProgressCount;
     }
-}
 
+    /// <summary>
+    /// Calculates progress between two processes for a date range without storing to database
+    /// </summary>
+    public async Task<List<StudentProgress>> CalculateProgressBetweenProcessesAsync(
+        Process startProcess,
+        Process endProcess)
+    {
+        var startStatusRecords = await _studentDailyStatusRepository.GetByProcessIdAsync(startProcess.ProcessId);
+        var endStatusRecords = await _studentDailyStatusRepository.GetByProcessIdAsync(endProcess.ProcessId);
+        
+        var startRecordsDict = startStatusRecords.ToDictionary(x => x.StudentId);
+        
+        var emptyStatus = new StudentDailyStatus
+        {
+            Courses = 0,
+            Chapters = 0,
+            Xp = 0,
+            Date = DateTime.MinValue
+        };
+        
+        var progressRecords = endStatusRecords
+            .Select(endStatus =>
+            {
+                var startStatus = startRecordsDict.GetValueOrDefault(endStatus.StudentId, emptyStatus);
+                
+                return new StudentProgress
+                {
+                    StudentId = endStatus.StudentId,
+                    ProcessId = endProcess.ProcessId,
+                    DifferenceOfCourses = endStatus.Courses - startStatus.Courses,
+                    DifferenceOfChapters = endStatus.Chapters - startStatus.Chapters,
+                    DifferenceOfXp = endStatus.Xp - startStatus.Xp,
+                    Notes = startStatus.Date == DateTime.MinValue 
+                        ? "First time tracking - no previous data" 
+                        : $"Progress from {startStatus.Date:yyyy-MM-dd} to {endStatus.Date:yyyy-MM-dd}"
+                };
+            })
+            .ToList();
+        
+        return progressRecords;
+    }
+}

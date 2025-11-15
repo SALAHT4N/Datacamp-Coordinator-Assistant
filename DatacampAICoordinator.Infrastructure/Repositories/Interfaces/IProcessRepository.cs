@@ -21,4 +21,13 @@ public interface IProcessRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The most recent Process object, or null if no processes exist</returns>
     Task<Process?> GetLatestProcessAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Finds a process by date (ignoring time component). If multiple processes exist for the same date,
+    /// returns the latest one based on time.
+    /// </summary>
+    /// <param name="date">The date to search for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The matching Process object, or null if not found</returns>
+    Task<Process?> GetProcessByDateAsync(DateTime date, CancellationToken cancellationToken = default);
 }

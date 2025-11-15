@@ -22,5 +22,12 @@ public interface IDataCampCoordinatorService
         string group = "gaza-sky-geeks-25-26",
         string team = "nnu-team",
         int days = 36500);
+    
+    /// <summary>
+    /// Generates a report for a specific date range by comparing data between two processes
+    /// </summary>
+    /// <param name="startDate">The start date of the reporting period</param>
+    /// <param name="endDate">The end date of the reporting period</param>
+    /// <returns>True if report was generated successfully, false if insufficient data</returns>
+    Task<bool> GenerateDateRangeReportAsync(DateTime startDate, DateTime endDate);
 }
-

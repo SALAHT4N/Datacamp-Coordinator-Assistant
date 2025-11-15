@@ -21,8 +21,7 @@ public class EmailReportPublisher : IReportPublisher
     /// Publishes the report by sending it via email
     /// </summary>
     /// <param name="htmlContent">The HTML content to send</param>
-    /// <param name="processId">The process ID for the report</param>
-    public async Task PublishAsync(string htmlContent, int processId)
+    public async Task PublishAsync(string htmlContent)
     {
         try
         {
@@ -35,7 +34,7 @@ public class EmailReportPublisher : IReportPublisher
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(_emailSettings.FromEmail, _emailSettings.FromName),
-                Subject = $"{_emailSettings.Subject} - Process {processId} - {DateTime.UtcNow:yyyy-MM-dd}",
+                Subject = $"{_emailSettings.Subject} - {DateTime.UtcNow:yyyy-MM-dd}",
                 Body = htmlContent,
                 IsBodyHtml = true
             };
@@ -44,11 +43,11 @@ public class EmailReportPublisher : IReportPublisher
 
             await smtpClient.SendMailAsync(mailMessage);
 
-            Console.WriteLine($"Email sent successfully for process {processId} to {_emailSettings.ToEmail}");
+            Console.WriteLine($"Email sent successfully to {_emailSettings.ToEmail}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to send email for process {processId}: {ex.Message}");
+            Console.WriteLine($"Failed to send email: {ex.Message}");
             throw;
         }
     }

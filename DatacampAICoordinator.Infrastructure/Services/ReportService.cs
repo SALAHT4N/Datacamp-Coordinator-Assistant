@@ -17,6 +17,7 @@ public class ReportService : IReportService
     private readonly IReportPublisher _reportPublisher;
     
     private readonly string ViewName = "StudentProgressReportV1.cshtml";
+    private readonly string DateRangeViewName = "StudentProgressReportV2.cshtml";
     
     /// <summary>
     /// CSV file name containing student emails to filter the report
@@ -48,7 +49,24 @@ public class ReportService : IReportService
         
         await SaveHtmlAsync(processId, renderedReport);
         
-        await _reportPublisher.PublishAsync(renderedReport, processId);
+        await _reportPublisher.PublishAsync(renderedReport);
+    }
+
+    /// <summary>
+    /// Generates and publishes a report from pre-calculated progress records for a date range
+    /// </summary>
+    /// <param name="progressRecords">The progress records to include in the report</param>
+    /// <param name="startDate">The start date of the reporting period</param>
+    /// <param name="endDate">The end date of the reporting period</param>
+    public async Task GenerateAndPublishDateRangeReportAsync(List<StudentProgress> progressRecords, DateTime startDate, DateTime endDate)
+    {
+        var reportData = await GenerateDateRangeReportData(progressRecords, startDate, endDate);
+        
+        var renderedReport = await _razorLightEngine.CompileRenderAsync(DateRangeViewName, reportData);
+        
+        await SaveHtmlAsync($"DateRange_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}", renderedReport);
+        
+        await _reportPublisher.PublishAsync(renderedReport);
     }
 
     private async Task<StudentProgressReportDto> GenerateReportData(int processId)
@@ -82,6 +100,50 @@ public class ReportService : IReportService
             ProgressEntries = progressEntries,
             InactiveStudents = inactiveStudents,
             InactiveThresholdDays = InactiveThresholdDays
+        };
+    }
+    
+    /// <summary>
+    /// Generates report data from pre-calculated progress records for a date range
+    /// </summary>
+    private async Task<DateRangeReportDto> GenerateDateRangeReportData(List<StudentProgress> progressRecords, DateTime startDate, DateTime endDate)
+    {
+        var studentEmailFilter = await GetStudentEmailFilterAsync();
+        
+        LogFilteringStatus(studentEmailFilter);
+        
+        var filteredProgressRecords = progressRecords;
+        if (studentEmailFilter != null && studentEmailFilter.Count > 0)
+        {
+            filteredProgressRecords = progressRecords
+                .Where(pr => studentEmailFilter.Contains(pr.Student.Email))
+                .ToList();
+        }
+        
+        var progressEntries = filteredProgressRecords
+            .Select(pr => new StudentProgressEntryDto
+            {
+                Id = pr.Id,
+                StudentId = pr.StudentId,
+                DifferenceOfCourses = pr.DifferenceOfCourses,
+                DifferenceOfChapters = pr.DifferenceOfChapters,
+                DifferenceOfXp = pr.DifferenceOfXp,
+                Notes = pr.Notes,
+                DatacampId = pr.Student.DatacampId,
+                FullName = pr.Student.FullName,
+                Email = pr.Student.Email,
+                Slug = pr.Student.Slug,
+                IsActive = pr.Student.IsActive,
+            })
+            .OrderByDescending(x => x.DifferenceOfXp)
+            .ToList();
+
+        return new DateRangeReportDto
+        {
+            StartDate = startDate,
+            EndDate = endDate,
+            GeneratedAt = DateTime.Now,
+            ProgressEntries = progressEntries
         };
     }
     
@@ -138,7 +200,6 @@ public class ReportService : IReportService
         return emails.Count > 0 ? emails : null;
     }
 
-    
     /// <summary>
     /// Retrieves progress entries for students in the given process, optionally filtered by email
     /// </summary>
@@ -229,9 +290,9 @@ public class ReportService : IReportService
             .ToList();
     }
     
-    private async Task SaveHtmlAsync(int processId, string html)
+    private async Task SaveHtmlAsync(object identifier, string html)
     {
-        var fileName = $"StudentProgressReport_{processId}_{DateTime.UtcNow:yyyyMMddHHmmss}.html";
+        var fileName = $"StudentProgressReport_{identifier}_{DateTime.UtcNow:yyyyMMddHHmmss}.html";
         var path = Path.Combine(AppContext.BaseDirectory, "ReportsOut");
         Directory.CreateDirectory(path);
         await File.WriteAllTextAsync(Path.Combine(path, fileName), html);

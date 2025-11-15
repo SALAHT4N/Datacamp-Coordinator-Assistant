@@ -85,4 +85,45 @@ public class DataCampCoordinatorService : IDataCampCoordinatorService
 
         return progressCount;
     }
+
+    /// <summary>
+    /// Generates a report for a specific date range by comparing data between two processes
+    /// </summary>
+    public async Task<bool> GenerateDateRangeReportAsync(DateTime startDate, DateTime endDate)
+    {
+        Console.WriteLine($"\n=== Generating Date Range Report ===");
+        Console.WriteLine($"Start Date: {startDate:yyyy-MM-dd}");
+        Console.WriteLine($"End Date: {endDate:yyyy-MM-dd}");
+
+        // Step 1: Find process for start date
+        var startProcess = await _processRepository.GetProcessByDateAsync(startDate);
+        if (startProcess == null)
+        {
+            Console.WriteLine($"ERROR: No process found for start date {startDate:yyyy-MM-dd}");
+            Console.WriteLine("Cannot generate report - insufficient data.");
+            return false;
+        }
+        Console.WriteLine($"Found start process: ProcessId={startProcess.ProcessId}, RunDate={startProcess.DateOfRun:yyyy-MM-dd HH:mm:ss}");
+
+        // Step 2: Find process for end date
+        var endProcess = await _processRepository.GetProcessByDateAsync(endDate);
+        if (endProcess == null)
+        {
+            Console.WriteLine($"ERROR: No process found for end date {endDate:yyyy-MM-dd}");
+            Console.WriteLine("Cannot generate report - insufficient data.");
+            return false;
+        }
+        Console.WriteLine($"Found end process: ProcessId={endProcess.ProcessId}, RunDate={endProcess.DateOfRun:yyyy-MM-dd HH:mm:ss}");
+
+        // Step 3: Calculate progress between the two processes
+        var progressRecords = await _progressCalculationService.CalculateProgressBetweenProcessesAsync(
+            startProcess, endProcess);
+        Console.WriteLine($"Calculated {progressRecords.Count} progress records for date range");
+
+        // Step 4: Generate and publish the report
+        await _reportService.GenerateAndPublishDateRangeReportAsync(progressRecords, startDate, endDate);
+        Console.WriteLine("Date range report generated and published");
+
+        return true;
+    }
 }
