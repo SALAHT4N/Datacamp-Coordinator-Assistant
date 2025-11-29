@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <PreserveCompilationContext>true</PreserveCompilationContext>
+        <MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
     </PropertyGroup>
 
     <ItemGroup>

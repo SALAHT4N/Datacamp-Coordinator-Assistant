@@ -43,7 +43,7 @@ builder.Services.AddScoped<IStudentProgressRepository, StudentProgressRepository
 builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
 
 // Register RazorLight Engine
-builder.Services.AddSingleton<IRazorLightEngine>(provider =>
+builder.Services.AddSingleton<RazorLightEngine>(provider =>
 {
     var templatesPath = Path.Combine(builder.Environment.ContentRootPath, "ReportTemplates");
     if (!Directory.Exists(templatesPath))
