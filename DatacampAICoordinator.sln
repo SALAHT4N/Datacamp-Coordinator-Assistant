@@ -1,10 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacampAICoordinator", "DatacampAICoordinator\DatacampAICoordinator.csproj", "{218630EE-6030-4F36-A195-63916AC018F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacampAICoordinator.Console", "DatacampAICoordinator.Console\DatacampAICoordinator.Console.csproj", "{218630EE-6030-4F36-A195-63916AC018F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacampAICoordinator.Infrastructure", "DatacampAICoordinator.Infrastructure\DatacampAICoordinator.Infrastructure.csproj", "{AE345281-3281-4C9E-92FC-E06FB94F86C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacampAICoordinator.Web", "DatacampAICoordinator.Web\DatacampAICoordinator.Web.csproj", "{2F31CC7B-2CE6-4DEE-B7BB-BE9327AE2E7A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacampAICoordinator.API", "DatacampAICoordinator.API\DatacampAICoordinator.API.csproj", "{2F31CC7B-2CE6-4DEE-B7BB-BE9327AE2E7A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
